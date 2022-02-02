@@ -8,6 +8,8 @@ class Page {
 	private $tpl;
 	private $options = [];
 	private $defaults = [
+		"header" => True,
+		"footer" => True,
 		"data" => [],
 	];
 
@@ -20,13 +22,13 @@ class Page {
 			"debug"         => False, // set to false to improve the speed
 		);
 
-		Tpl::configure( $config );
+		Tpl::configure($config);
 
 		$this -> tpl = new Tpl;
 
 		$this -> setData($this -> options["data"]);
 
-		$this -> tpl -> draw("header");
+		if ($this -> options["header"] === True) $this -> tpl -> draw("header");
 	}
 
 	private function setData($data = array()) {
@@ -41,7 +43,7 @@ class Page {
 	}
 
 	public function __destruct() {
-		$this -> tpl -> draw("footer");
+		if ($this -> options["header"] === True) $this -> tpl -> draw("footer");
 	}
 }
 
