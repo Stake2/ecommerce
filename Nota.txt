@@ -1,0 +1,31 @@
+E aí pessoal, tudo bem?
+Ao criar um novo usuário, pode ser que não consiga logar com ele. Isso ocorre pois a senha ainda não está sendo criptografada em nosso projeto. Os professores irão implementar essa funcionalidade nas próximas aulas
+Por enquanto, para resolver esse problema, vá até o arquivo index.php, e deixe a rota POST "/admin/users/create" assim:
+
+
+$app->post("/admin/users/create", function () {
+
+ 	User::verifyLogin();
+
+	$user = new User();
+
+ 	$_POST["inadmin"] = (isset($_POST["inadmin"])) ? 1 : 0;
+
+ 	$_POST['despassword'] = password_hash($_POST["despassword"], PASSWORD_DEFAULT, [
+
+ 		"cost"=>12
+
+ 	]);
+
+ 	$user->setData($_POST);
+
+	$user->save();
+
+	header("Location: /admin/users");
+ 	exit;
+
+});
+
+
+Assim conseguiremos logar com novos usuários cadastrados
+Abraço e bons estudos :)
