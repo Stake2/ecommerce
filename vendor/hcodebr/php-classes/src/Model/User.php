@@ -38,8 +38,8 @@ class User extends Model {
 		}
 	}
 
-	public static function verifyLogin($inadmin = True) {
-		if (!isset($_SESSION[User::SESSION]) or !$_SESSION[User::SESSION] or !(int)$_SESSION[User::SESSION]["id_user"] > 0 or (bool)$_SESSION[User::SESSION]["is_admin"] !== $inadmin) {
+	public static function verifyLogin($is_admin = True) {
+		if (!isset($_SESSION[User::SESSION]) or !$_SESSION[User::SESSION] or !(int)$_SESSION[User::SESSION]["id_user"] > 0 or (bool)$_SESSION[User::SESSION]["is_admin"] !== $is_admin) {
 			header("Location: /admin/login");
 			exit;
 		}
@@ -53,6 +53,16 @@ class User extends Model {
 		$sql = new Sql();
 
 		return $sql -> select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(id_person) ORDER BY b.des_person");
+	}
+
+	public function getLogged() {
+		$sql = new Sql();
+
+		$results = $sql -> select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(id_person) WHERE a.id_user = :id_user", array(
+			":id_user" => $this->getid_user(),
+		));
+
+		return $results[0];
 	}
 
 	public function save() {

@@ -12,6 +12,7 @@ class Page {
 		"footer" => True,
 		"data" => [],
 	];
+	private $user_name;
 
 	public function __construct($opts = array(), $tpl_dir = "/views/") {
 		$this -> options = array_merge($this -> defaults, $opts);
@@ -28,7 +29,11 @@ class Page {
 
 		$this -> setData($this -> options["data"]);
 
-		if ($this -> options["header"] === True) $this -> tpl -> draw("header");
+		if ($this -> options["header"] === True) {
+			$this -> setTpl("header", array(
+				"user_name", $this -> user_name,
+			));
+		}
 	}
 
 	private function setData($data = array()) {
@@ -43,7 +48,10 @@ class Page {
 	}
 
 	public function __destruct() {
-		if ($this -> options["header"] === True) $this -> tpl -> draw("footer");
+		if ($this -> options["header"] === True) {
+			$this -> tpl -> draw("footer");
+			
+		};
 	}
 }
 

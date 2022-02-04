@@ -21,12 +21,12 @@ class Category extends Model {
 		));
 
 		$this -> setData($results[0]);
+
+		Category::updateFile();
 	}
 
 	public function get($id_category) {
 		$sql = new Sql();
-
-		echo $id_category;
 
 		$results = $sql -> select("SELECT * FROM tb_categories WHERE id_category = :id_category", array(
 			":id_category" => $id_category,
@@ -41,6 +41,26 @@ class Category extends Model {
 		$sql -> query("DELETE FROM tb_categories WHERE id_category = :id_category", array(
 			":id_category" => $this -> getid_category(),
 		));
+
+		Category::updateFile();
+	}
+
+	public static function updateFile() {
+		$categories = Category::listAll();
+
+		$html = array();
+
+		foreach ($categories as $row) {
+			$elements = '<li><a href="/categories/'.$row["id_category"].'">'.$row["des_category"].'</a></li>';
+
+			if ($row != array_reverse($categories)[0]) {
+				$elements .= "\n";
+			}
+
+			array_push($html, $elements);
+		}
+
+		file_put_contents($_SERVER["DOCUMENT_ROOT"].DIRECTORY_SEPARATOR."views".DIRECTORY_SEPARATOR."categories-menu.html", implode("", $html));
 	}
 }
 

@@ -23,7 +23,10 @@ $app->get("/", function() {
 $app->get("/admin", function() {
 	User::verifyLogin();
 
-    $page = new PageAdmin();
+	$user = new User();
+	$user -> get($_SESSION[User::SESSION]["id_user"]);
+	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
+    $page = new PageAdmin($opts);
 
 	$page -> setTpl("Index");
 });
@@ -56,7 +59,10 @@ $app->get("/admin/users", function() {
 
 	$users = User::listAll();
 
-    $page = new PageAdmin();
+	$user = new User();
+	$user -> get($_SESSION[User::SESSION]["id_user"]);
+	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
+    $page = new PageAdmin($opts);
 
 	$page -> setTpl("users", array(
 		"users" => $users,
@@ -66,7 +72,10 @@ $app->get("/admin/users", function() {
 $app->get("/admin/users/create", function() {
 	User::verifyLogin();
 
-    $page = new PageAdmin();
+	$user = new User();
+	$user -> get($_SESSION[User::SESSION]["id_user"]);
+	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
+    $page = new PageAdmin($opts);
 
 	$page -> setTpl("users-create");
 });
@@ -91,7 +100,10 @@ $app->get("/admin/users/:id_user", function($id_user) {
 
 	$user -> get((int)$id_user);
 
-    $page = new PageAdmin();
+	$user = new User();
+	$user -> get($_SESSION[User::SESSION]["id_user"]);
+	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
+    $page = new PageAdmin($opts);
 
 	$page -> setTpl("users-update", array(
 		"user" => $user -> getValues(),
@@ -201,7 +213,10 @@ $app->get("/admin/categories", function() {
 
 	$categories = Category::listAll();
 
-	$page = new PageAdmin();
+	$user = new User();
+	$user -> get($_SESSION[User::SESSION]["id_user"]);
+	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
+    $page = new PageAdmin($opts);
 
 	$page -> setTpl("categories", array(
 		"categories" => $categories,
@@ -211,7 +226,10 @@ $app->get("/admin/categories", function() {
 $app->get("/admin/categories/create", function() {
 	User::verifyLogin();
 
-	$page = new PageAdmin();
+	$user = new User();
+	$user -> get($_SESSION[User::SESSION]["id_user"]);
+	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
+    $page = new PageAdmin($opts);
 
 	$page -> setTpl("categories-create");
 });
@@ -249,7 +267,10 @@ $app->get("/admin/categories/:id_category", function($id_category) {
 
 	$category -> get((int)$id_category);
 
-	$page = new PageAdmin();
+	$user = new User();
+	$user -> get($_SESSION[User::SESSION]["id_user"]);
+	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
+    $page = new PageAdmin($opts);
 
 	$page -> setTpl("categories-update", array(
 		"category" => $category -> getValues(),
@@ -269,6 +290,19 @@ $app->post("/admin/categories/:id_category", function($id_category) {
 
 	header("Location: /admin/categories");
 	exit;
+});
+
+$app->get("/categories/:id_category", function($id_category) {
+	$category = new Category();
+
+	$category -> get((int)$id_category);
+
+	$page = new Page();
+
+	$page -> setTpl("category", array(
+		"category" => $category -> getValues(),
+		"products" => array(),
+	));
 });
 
 $app->run();
