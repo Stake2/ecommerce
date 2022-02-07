@@ -62,6 +62,54 @@ class Category extends Model {
 
 		file_put_contents($_SERVER["DOCUMENT_ROOT"].DIRECTORY_SEPARATOR."views".DIRECTORY_SEPARATOR."categories-menu.html", implode("", $html));
 	}
+
+	public function getProducts($related = True) {
+		$sql = new Sql();
+
+		if ($related === True) {
+			return $sql -> select("
+			SELECT * FROM tb_products WHERE id_product IN(
+				SELECT a.id_product
+				FROM tb_products a
+				INNER JOIN tb_products_categories b ON a.id_product = b.id_product
+				WHERE b.id_category = :id_category
+			);
+			", array(
+				"id_category" => $this -> getid_category(),
+			));
+		}
+
+		else {
+			return $sql -> select("
+			SELECT * FROM tb_products WHERE id_product NOT IN(
+				SELECT a.id_product
+				FROM tb_products a
+				INNER JOIN tb_products_categories b ON a.id_product = b.id_product
+				WHERE b.id_category = :id_category
+			);
+			", array(
+				"id_category" => $this -> getid_category(),
+			));
+		}
+	}
+
+	public function add_product(Product $product) {
+		$sql = new Sql();
+
+		$sql -> query("INSERT INTO tb_products_categories (id_category, id_product) VALUES(:id_category, :id_product)", array(
+			":id_category" => $this -> getid_category(),
+			":id_product" => $product -> getid_product(),
+		));
+	}
+
+	public function remove_product(Product $product) {
+		$sql = new Sql();
+
+		$sql -> query("DELETE FROM tb_products_categories WHERE id_category = :id_category AND id_product = :id_product", array(
+			":id_category" => $this -> getid_category(),
+			":id_product" => $product -> getid_product(),
+		));
+	}
 }
 
 ?>

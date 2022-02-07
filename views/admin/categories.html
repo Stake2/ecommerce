@@ -28,7 +28,7 @@
                   <tr>
                     <th style="wid_th: 10px">#</th>
                     <th>Nome da Categoria</th>
-                    <th style="wid_th: 140px">&nbsp;</th>
+                    <th style="wid_th: 240px">&nbsp;</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -37,6 +37,7 @@
                     <td>{$value.id_category}</td>
                     <td>{$value.des_category}</td>
                     <td>
+					  <a href="/admin/categories/{$value.id_category}/products" class="btn btn-default btn-xs"><i class="fa fa-edit"></i> Produtos</a>
                       <a href="/admin/categories/{$value.id_category}" class="btn btn-primary btn-xs"><i class="fa fa-edit"></i> Editar</a>
                       <a href="/admin/categories/{$value.id_category}/delete" onclick="return confirm('Deseja realmente excluir este registro?')" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> Excluir</a>
                     </td>
