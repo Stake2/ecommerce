@@ -39,7 +39,7 @@ class User extends Model {
 	}
 
 	public static function verifyLogin($is_admin = True) {
-		if (!isset($_SESSION[User::SESSION]) or !$_SESSION[User::SESSION] or !(int)$_SESSION[User::SESSION]["id_user"] > 0 or (bool)$_SESSION[User::SESSION]["is_admin"] !== $is_admin) {
+		if (User::Check_Login($is_admin)) {
 			header("Location: /admin/login");
 			exit;
 		}
@@ -80,6 +80,16 @@ class User extends Model {
 		$this -> setData($results[0]);
 	}
 
+	public static function Get_From_Session() {
+		$user = new User();
+
+		if (isset($_SESSION[User::SESSION]) and (int)$_SESSION[User::SESSION]["id_user"] > 0) {
+			$user -> setData($_SESSION[User::SESSION]);
+		}
+
+		return $user;
+	}
+
 	public function get($id_user) {
 		$sql = new Sql();
 
@@ -88,6 +98,29 @@ class User extends Model {
 		));
 
 		$this -> setData($results[0]);
+	}
+
+	public static function Check_Login($is_admin = True) {
+		$user = new User();
+
+		if (!isset($_SESSION[User::SESSION]) or !$_SESSION[User::SESSION] or !(int)$_SESSION[User::SESSION]["id_user"] > 0) {
+			# Não está logado
+			return False;
+		}
+
+		else {
+			if ($is_admin == True and (bool)$_SESSION[User::SESSION]["is_admin"] === True) {
+				return True;
+			}
+
+			else if ($is_admin === False) {
+				return True;
+			}
+
+			else {
+				return False;
+			}
+		}
 	}
 
 	public function update() {
@@ -163,17 +196,6 @@ class User extends Model {
 
 				# Encrypt with key and original text
 				$code = User::encrypt_decrypt("encrypt", $data_recovery["id_recovery"]);
-				
-				/*
-				$key = User::KEY;
-				$original_text = $data_recovery["id_recovery"];
-				echo $original_text;
-				$ivlen = openssl_cipher_iv_length($cipher = "AES-128-CBC");
-				$iv = openssl_random_pseudo_bytes($ivlen);
-				$ciphertext_raw = openssl_encrypt($original_text, $cipher, $key, $options = OPENSSL_RAW_DATA, $iv);
-				$hmac = hash_hmac("sha256", $ciphertext_raw, $key, $as_binary = true);
-				$code = base64_encode($iv.$hmac.$ciphertext_raw);
-				*/
 
 				$link = "http://www.hcodecommerce.com.br:8080/admin/forgot/reset?code=$code";
 
