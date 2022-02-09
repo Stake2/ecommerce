@@ -83,6 +83,50 @@ class Cart extends Model {
 
 		$this -> setData($results[0]);
 	}
+
+	public function Get_Products() {
+		$sql = new Sql();
+
+		$rows = $sql -> select("
+			SELECT b.id_product, b.des_product, b.vl_price, b.vl_width, b.vl_height, b.vl_length, b.vl_weight, b.des_url, COUNT(*) AS nr_quantity, SUM(b.vl_price) AS total_value
+			FROM tb_cartsproducts a
+			INNER JOIN tb_products b ON a.id_product = b.id_product
+			WHERE a.id_cart = :id_cart AND a.dt_removed IS NULL
+			GROUP BY b.id_product, b.des_product, b.vl_price, b.vl_width, b.vl_height, b.vl_length, b.vl_weight, b.des_url
+			ORDER BY b.des_product
+		", array(
+			":id_cart" => $this -> getid_cart(),
+		));
+
+		return Product::checkList($rows);
+	}
+
+	public function Add_Product(Product $product) {
+		$sql = new Sql();
+
+		$sql -> query("INSERT INTO tb_cartsproducts (id_cart, id_product) VALUES(:id_cart, :id_product)", array(
+			":id_cart" => $this -> getid_cart(),
+			":id_product" => $product -> getid_product(),
+		));
+	}
+
+	public function Remove_Product(Product $product, $all = False) {
+		$sql = new Sql();
+
+		if ($all === True) {
+			$sql -> query("UPDATE tb_cartsproducts SET dt_removed = NOW() WHERE id_cart = :id_cart AND id_product = :id_product AND dt_removed IS NULL", array(
+				":id_cart" => $this -> getid_cart(),
+				":id_product" => $product -> getid_product(),
+			));
+		}
+
+		else {
+			$sql -> query("UPDATE tb_cartsproducts SET dt_removed = NOW() WHERE id_cart = :id_cart AND id_product = :id_product AND dt_removed IS NULL LIMIT 1", array(
+				":id_cart" => $this -> getid_cart(),
+				":id_product" => $product -> getid_product(),
+			));
+		}
+	}
 }
 
 ?>

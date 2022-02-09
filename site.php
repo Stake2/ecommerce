@@ -60,7 +60,53 @@ $app->get("/cart", function() {
 
 	$cart = Cart::Get_From_Session();
 
-	$page -> setTpl("cart");
+	$page -> setTpl("cart", array(
+		"cart" => $cart -> getValues(),
+		"products" => $cart -> Get_Products(),
+	));
+});
+
+$app->get("/cart/:id_product/add", function($id_product) {
+	$product = new Product();
+
+	$product -> get((int)$id_product);
+
+	$cart = Cart::Get_From_Session();
+
+	$quantity = (isset($_GET["quantity"])) ? (int)$_GET["quantity"] : 1;
+
+	for ($i = 0; $i < $quantity; $i++) {
+		$cart -> Add_Product($product);
+	}
+
+	header("Location: /cart");
+	exit;
+});
+
+$app->get("/cart/:id_product/minus", function($id_product) {
+	$product = new Product();
+
+	$product -> get((int)$id_product);
+
+	$cart = Cart::Get_From_Session();
+
+	$cart -> Remove_Product($product);
+
+	header("Location: /cart");
+	exit;
+});
+
+$app->get("/cart/:id_product/remove", function($id_product) {
+	$product = new Product();
+
+	$product -> get((int)$id_product);
+
+	$cart = Cart::Get_From_Session();
+
+	$cart -> Remove_Product($product, True);
+
+	header("Location: /cart");
+	exit;
 });
 
 ?>
