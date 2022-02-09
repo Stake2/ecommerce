@@ -104,6 +104,24 @@ class Product extends Model {
 
 		$this -> checkPhoto();
 	}
+
+	public function get_From_URL($des_url) {
+		$sql = new Sql();
+
+		$rows = $sql -> select("SELECT * FROM tb_products WHERE des_url = :des_url LIMIT 1", array(
+			":des_url" => $des_url,
+		));
+
+		$this -> setData($rows[0]);
+	}
+
+	public function Get_Categories() {
+		$sql = new Sql();
+
+		return $sql -> select("SELECT * FROM tb_categories a INNER JOIN tb_products_categories b ON a.id_category = b.id_category WHERE b.id_product = :id_product", array(
+			":id_product" => $this -> getid_product(),
+		));
+	}
 }
 
 ?>
