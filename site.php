@@ -63,6 +63,7 @@ $app->get("/cart", function() {
 	$page -> setTpl("cart", array(
 		"cart" => $cart -> getValues(),
 		"products" => $cart -> Get_Products(),
+		"error" => Cart::Get_Message_Error(),
 	));
 });
 
@@ -104,6 +105,15 @@ $app->get("/cart/:id_product/remove", function($id_product) {
 	$cart = Cart::Get_From_Session();
 
 	$cart -> Remove_Product($product, True);
+
+	header("Location: /cart");
+	exit;
+});
+
+$app->post("/cart/freight", function() {
+	$cart = Cart::Get_From_Session();
+
+	$cart -> Set_Freight($_POST["zip_code"]);
 
 	header("Location: /cart");
 	exit;
