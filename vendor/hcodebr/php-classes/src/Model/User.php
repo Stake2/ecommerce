@@ -9,6 +9,8 @@ use \Hcode\Mailer;
 class User extends Model {
 	const SESSION = "User";
 	const KEY = "HcodePHP7_Secret";
+	const ERROR = "UserError";
+	const ERROR_REGISTER = "UserErrorRegister";
 
 	public static function login($login, $password) {
 		$sql = new Sql();
@@ -26,6 +28,8 @@ class User extends Model {
 		if (password_verify($password, $data["des_password"]) === True) {
 			$user = new User();
 
+			$data["des_person"] = utf8_encode($data["des_person"]);
+
 			$user -> setData($data);
 
 			$_SESSION[User::SESSION] = $user -> getValues();
@@ -39,9 +43,39 @@ class User extends Model {
 	}
 
 	public static function verifyLogin($is_admin = True) {
-		if (User::Check_Login($is_admin)) {
-			header("Location: /admin/login");
+		$user = new User();
+
+		if (User::Check_Login($is_admin) === False) {
+			if ($is_admin == True) {
+				header("Location: /admin/login");
+			}
+
+			else {
+				header("Location: /login");
+			}
+
 			exit;
+		}
+	}
+
+	public static function Check_Login($is_admin = True) {
+		if (!isset($_SESSION[User::SESSION]) or !$_SESSION[User::SESSION] or !(int)$_SESSION[User::SESSION]["id_user"] > 0) {
+			# Não está logado
+			return False;
+		}
+
+		else {
+			if ($is_admin == True and (bool)$_SESSION[User::SESSION]["is_admin"] === True) {
+				return True;
+			}
+
+			else if ($is_admin === False) {
+				return True;
+			}
+
+			else {
+				return False;
+			}
 		}
 	}
 
@@ -69,12 +103,12 @@ class User extends Model {
 		$sql = new Sql();
 
 		$results = $sql -> select("CALL sp_users_save(:des_person, :des_login, :des_password, :des_email, :nr_phone, :is_admin)", array(
-			":des_person" => $this->getdes_person(),
-			":des_login" => $this->getdes_login(),
-			":des_password" => $this->getdes_password(),
-			":des_email" => $this->getdes_email(),
-			":nr_phone" => $this->getnr_phone(),
-			":is_admin" => $this->getis_admin(),
+			":des_person" => utf8_decode($this -> getdes_person()),
+			":des_login" => $this -> getdes_login(),
+			":des_password" => encrypt_decrypt("encrypt", $this -> getdes_password()),
+			":des_email" => $this -> getdes_email(),
+			":nr_phone" => $this -> getnr_phone(),
+			":is_admin" => $this -> getis_admin(),
 		));
 
 		$this -> setData($results[0]);
@@ -97,30 +131,11 @@ class User extends Model {
 			":id_user" => $id_user,
 		));
 
-		$this -> setData($results[0]);
-	}
+		$data = $results[0]
 
-	public static function Check_Login($is_admin = True) {
-		$user = new User();
+		$data["des_person"] = utf8_encode($data["des_person"]);
 
-		if (!isset($_SESSION[User::SESSION]) or !$_SESSION[User::SESSION] or !(int)$_SESSION[User::SESSION]["id_user"] > 0) {
-			# Não está logado
-			return False;
-		}
-
-		else {
-			if ($is_admin == True and (bool)$_SESSION[User::SESSION]["is_admin"] === True) {
-				return True;
-			}
-
-			else if ($is_admin === False) {
-				return True;
-			}
-
-			else {
-				return False;
-			}
-		}
+		$this -> setData($data);
 	}
 
 	public function update() {
@@ -128,9 +143,9 @@ class User extends Model {
 
 		$results = $sql -> select("CALL sp_usersupdate_save(:id_user, :des_person, :des_login, :des_password, :des_email, :nr_phone, :is_admin)", array(
 			":id_user" => $this->getid_user(),
-			":des_person" => $this->getdes_person(),
+			":des_person" => utf8_decode($this->getdes_person()),
 			":des_login" => $this->getdes_login(),
-			":des_password" => $this->getdes_password(),
+			":des_password" => encrypt_decrypt("encrypt", $this -> getdes_password()),
 			":des_email" => $this->getdes_email(),
 			":nr_phone" => $this->getnr_phone(),
 			":is_admin" => $this->getis_admin(),
@@ -150,11 +165,12 @@ class User extends Model {
 	private function encrypt_decrypt($action, $string) {
 		$key = User::KEY;
 		$output = false;
-		$cipher = 'AES-256-CBC';
+		$cipher = "AES-256-CBC";
 				
 		if ($action === "encrypt") {
 			$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher));
 			$output = base64_encode(openssl_encrypt($string, $cipher, $key, 0, $iv));
+
 			return $output."::".bin2hex($iv);
 		}
 
@@ -257,6 +273,22 @@ class User extends Model {
 			":password" => $password,
 			":id_user" => $this -> getid_user(),
 		));
+	}
+
+	public static function Set_Error($message) {
+		$_SESSION[User::ERROR] = $message;
+	}
+
+	public static function Get_Error() {
+		$message = (isset($_SESSION[User::ERROR])) ? $_SESSION[User::ERROR] : "";
+
+		User::Clear_Error();
+
+		return $message;
+	}
+
+	public static function Clear_Error() {
+		$_SESSION[User::ERROR] = NULL;
 	}
 }
 

@@ -9,10 +9,7 @@ $app->get("/admin/products", function() {
 
 	$products = Product::listAll();
 
-	$user = new User();
-	$user -> get($_SESSION[User::SESSION]["id_user"]);
-	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
-    $page = new PageAdmin($opts);
+    $page = new PageAdmin();
 
 	$page -> setTpl("products", array(
 		"products" => $products,
@@ -52,10 +49,7 @@ $app->get("/admin/products/:id_product", function($id_product) {
 
 	$product -> save();
 
-	$user = new User();
-	$user -> get($_SESSION[User::SESSION]["id_user"]);
-	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
-    $page = new PageAdmin($opts);
+    $page = new PageAdmin();
 
 	$page -> setTpl("products-update", array(
 		"product" => $product -> getValues(),

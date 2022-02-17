@@ -8,10 +8,7 @@ $app->get("/admin/users", function() {
 
 	$users = User::listAll();
 
-	$user = new User();
-	$user -> get($_SESSION[User::SESSION]["id_user"]);
-	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
-    $page = new PageAdmin($opts);
+    $page = new PageAdmin();
 
 	$page -> setTpl("users", array(
 		"users" => $users,
@@ -21,10 +18,7 @@ $app->get("/admin/users", function() {
 $app->get("/admin/users/create", function() {
 	User::verifyLogin();
 
-	$user = new User();
-	$user -> get($_SESSION[User::SESSION]["id_user"]);
-	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
-    $page = new PageAdmin($opts);
+    $page = new PageAdmin();
 
 	$page -> setTpl("users-create");
 });
@@ -49,10 +43,7 @@ $app->get("/admin/users/:id_user", function($id_user) {
 
 	$user -> get((int)$id_user);
 
-	$user = new User();
-	$user -> get($_SESSION[User::SESSION]["id_user"]);
-	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
-    $page = new PageAdmin($opts);
+    $page = new PageAdmin();
 
 	$page -> setTpl("users-update", array(
 		"user" => $user -> getValues(),

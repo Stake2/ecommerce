@@ -10,10 +10,7 @@ $app->get("/admin/categories", function() {
 
 	$categories = Category::listAll();
 
-	$user = new User();
-	$user -> get($_SESSION[User::SESSION]["id_user"]);
-	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
-    $page = new PageAdmin($opts);
+    $page = new PageAdmin();
 
 	$page -> setTpl("categories", array(
 		"categories" => $categories,
@@ -23,10 +20,7 @@ $app->get("/admin/categories", function() {
 $app->get("/admin/categories/create", function() {
 	User::verifyLogin();
 
-	$user = new User();
-	$user -> get($_SESSION[User::SESSION]["id_user"]);
-	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
-    $page = new PageAdmin($opts);
+    $page = new PageAdmin();
 
 	$page -> setTpl("categories-create");
 });
@@ -64,10 +58,7 @@ $app->get("/admin/categories/:id_category", function($id_category) {
 
 	$category -> get((int)$id_category);
 
-	$user = new User();
-	$user -> get($_SESSION[User::SESSION]["id_user"]);
-	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
-    $page = new PageAdmin($opts);
+    $page = new PageAdmin();
 
 	$page -> setTpl("categories-update", array(
 		"category" => $category -> getValues(),
@@ -96,10 +87,7 @@ $app->get("/admin/categories/:id_category/products", function($id_category) {
 
 	$category -> get((int)$id_category);
 
-	$user = new User();
-	$user -> get($_SESSION[User::SESSION]["id_user"]);
-	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
-    $page = new PageAdmin($opts);
+    $page = new PageAdmin();
 
 	$page -> setTpl("categories-products", array(
 		"category" => $category -> getValues(),

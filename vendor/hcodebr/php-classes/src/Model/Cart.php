@@ -214,19 +214,19 @@ class Cart extends Model {
 		return str_replace(",", ".", $value);
 	}
 
-	public static function Set_Message_Error($message) {
+	public static function Set_Error($message) {
 		$_SESSION[Cart::SESSION_ERROR] = $message;
 	}
 
-	public static function Get_Message_Error() {
+	public static function Get_Error() {
 		$message = (isset($_SESSION[Cart::SESSION_ERROR])) ? $_SESSION[Cart::SESSION_ERROR] : "";
 
-		Cart::Clear_Message_Error();
+		Cart::Clear_Error();
 
 		return $message;
 	}
 
-	public static function Clear_Message_Error() {
+	public static function Clear_Error() {
 		$_SESSION[Cart::SESSION_ERROR] = NULL;
 	}
 

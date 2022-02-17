@@ -7,10 +7,7 @@ use \Hcode\Model\User;
 $app->get("/admin", function() {
 	User::verifyLogin();
 
-	$user = new User();
-	$user -> get($_SESSION[User::SESSION]["id_user"]);
-	$opts = array("data" => ["user_name" => $user -> getdes_person()]);
-    $page = new PageAdmin($opts);
+    $page = new PageAdmin();
 
 	$page -> setTpl("Index");
 });

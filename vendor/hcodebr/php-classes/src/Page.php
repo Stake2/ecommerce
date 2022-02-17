@@ -3,6 +3,28 @@
 namespace Hcode;
 
 use Rain\Tpl;
+use \Hcode\Model\User;
+use \Hcode\DB\Sql;
+
+function Get_User_Name($is_admin = True) {
+	$user = User::Get_From_Session();
+
+	$sql = new Sql();
+
+	$login = $user -> getdes_login();
+
+	$results = $sql -> select("SELECT * FROM tb_users a INNER JOIN tb_persons b ON a.id_person = b.id_person WHERE a.des_login = :LOGIN", array(
+		":LOGIN" => $login,
+	));
+
+	if (count($results) > 0) {
+		return $results[0]["des_person"];
+	}
+
+	else {
+		return "";
+	}
+}
 
 class Page {
 	private $tpl;
@@ -29,9 +51,11 @@ class Page {
 
 		$this -> setData($this -> options["data"]);
 
+		$this -> user_name = Get_User_Name();
+
 		if ($this -> options["header"] === True) {
 			$this -> setTpl("header", array(
-				"user_name", $this -> user_name,
+				"user_name" => $this -> user_name,
 			));
 		}
 	}
