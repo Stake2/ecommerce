@@ -141,6 +141,13 @@ $app->get("/login", function() {
 
 	$page -> setTpl("login", array(
 		"error" => User::Get_Error(),
+		"error_register" => User::Get_Register_Error(),
+		"register_values" => (isset($_SESSION["register_values"])) ? $_SESSION["register_values"] : 
+		array(
+			"name" => "",
+			"email" => "",
+			"phone" => "",
+		),
 	));
 });
 
@@ -162,6 +169,62 @@ $app->get("/logout", function() {
 	User::logout();
 
 	header("Location: /login");
+	exit;
+});
+
+$app->get("/register", function() {
+	var_dump("Tal");
+	$_SESSION["register_values"] = $_POST;
+
+	$field_names = array(
+		"name",
+		"email",
+		"password",
+	);
+
+	$portuguese_field_names = array(
+		"o seu nome",
+		"o seu email",
+		"a sua senha",
+	);
+
+	$i = 0;
+	foreach ($field_names as $field_name) {
+		$portuguese_field_name = $portuguese_field_names[$i];
+
+		if (!isset($_POST[$field_name]) or $_POST[$field_name] == "") {
+			User::Set_Register_Error("Preencha ".$portuguese_field_name.".");
+
+			header("Location: /login");
+			exit;
+		}
+
+		$i++;
+	}
+
+	if (User::Check_If_Login_Exists($_POST["email"]) == True) {
+		User::Set_Register_Error("Este endereço de email já está sendo usado por outro usuário.");
+
+		header("Location: /login");
+		exit;
+	}
+
+	$user = new User();
+
+	$user -> setData(array(
+		"is_admin" => 0,
+		"des_login" => $_POST["email"],
+		"des_person" => $_POST["name"],
+		"des_email" => $_POST["email"],
+		"des_password" => $_POST["password"],
+		"nr_phone" => $_POST["phone"],
+	));
+
+	$user -> save();
+
+	User::login($_POST["email"], $_POST["password"]);
+
+	header("Location: /checkout");
 	exit;
 });
 

@@ -10,12 +10,12 @@ class User extends Model {
 	const SESSION = "User";
 	const KEY = "HcodePHP7_Secret";
 	const ERROR = "UserError";
-	const ERROR_REGISTER = "UserErrorRegister";
+	const ERROR_REGISTER = "UserRegisterError";
 
 	public static function login($login, $password) {
 		$sql = new Sql();
 
-		$results = $sql -> select("SELECT * from tb_users WHERE des_login = :LOGIN", array(
+		$results = $sql -> select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(id_person) WHERE a.des_login = :LOGIN", array(
 			":LOGIN" => $login,
 		));
 
@@ -131,7 +131,9 @@ class User extends Model {
 			":id_user" => $id_user,
 		));
 
-		$data = $results[0]
+		echo $id_user;
+
+		$data = $results[0];
 
 		$data["des_person"] = utf8_encode($data["des_person"]);
 
@@ -289,6 +291,32 @@ class User extends Model {
 
 	public static function Clear_Error() {
 		$_SESSION[User::ERROR] = NULL;
+	}
+
+	public static function Set_Register_Error($message) {
+		$_SESSION[User::ERROR_REGISTER] = $message;
+	}
+
+	public static function Get_Register_Error() {
+		$message = (isset($_SESSION[User::ERROR_REGISTER])) ? $_SESSION[User::ERROR_REGISTER] : "";
+
+		User::Clear_Register_Error();
+
+		return $message;
+	}
+
+	public static function Clear_Register_Error() {
+		$_SESSION[User::ERROR_REGISTER] = NULL;
+	}
+
+	public static function Check_If_Login_Exists($login) {
+		$sql = new Sql();
+
+		$results = $sql -> select("SELECT * FROM tb_users WHERE des_login = :des_login", array(
+			":des_login" => $login,
+		));
+
+		return (count($results) > 0);
 	}
 }
 
