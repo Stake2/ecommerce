@@ -10,7 +10,8 @@ class User extends Model {
 	const SESSION = "User";
 	const KEY = "HcodePHP7_Secret";
 	const ERROR = "UserError";
-	const ERROR_REGISTER = "UserRegisterError";
+	const REGISTER = "UserRegister";
+	const SUCCESS = "UserSuccess";
 
 	public static function login($login, $password) {
 		$sql = new Sql();
@@ -105,7 +106,7 @@ class User extends Model {
 		$results = $sql -> select("CALL sp_users_save(:des_person, :des_login, :des_password, :des_email, :nr_phone, :is_admin)", array(
 			":des_person" => utf8_decode($this -> getdes_person()),
 			":des_login" => $this -> getdes_login(),
-			":des_password" => encrypt_decrypt("encrypt", $this -> getdes_password()),
+			":des_password" => User::encrypt_decrypt("encrypt", User::KEY, $this -> getdes_password()),
 			":des_email" => $this -> getdes_email(),
 			":nr_phone" => $this -> getnr_phone(),
 			":is_admin" => $this -> getis_admin(),
@@ -140,14 +141,22 @@ class User extends Model {
 		$this -> setData($data);
 	}
 
-	public function update() {
+	public function update($change_password = True) {
+		if ($change_password == True) {
+		   $password = User::encrypt_decrypt("encrypt", User::KEY, $this -> getdes_password());
+		}
+
+		else {	 
+		   $password = $_POST["des_password"];
+		}
+
 		$sql = new Sql();
 
 		$results = $sql -> select("CALL sp_usersupdate_save(:id_user, :des_person, :des_login, :des_password, :des_email, :nr_phone, :is_admin)", array(
 			":id_user" => $this->getid_user(),
 			":des_person" => utf8_decode($this->getdes_person()),
 			":des_login" => $this->getdes_login(),
-			":des_password" => encrypt_decrypt("encrypt", $this -> getdes_password()),
+			":des_password" => $password,
 			":des_email" => $this->getdes_email(),
 			":nr_phone" => $this->getnr_phone(),
 			":is_admin" => $this->getis_admin(),
@@ -164,9 +173,8 @@ class User extends Model {
 		));
 	}
 
-	private function encrypt_decrypt($action, $string) {
-		$key = User::KEY;
-		$output = false;
+	private static function encrypt_decrypt($action, $key, $string) {
+		$output = False;
 		$cipher = "AES-256-CBC";
 				
 		if ($action === "encrypt") {
@@ -213,7 +221,7 @@ class User extends Model {
 				$data_recovery = $results_2[0];
 
 				# Encrypt with key and original text
-				$code = User::encrypt_decrypt("encrypt", $data_recovery["id_recovery"]);
+				$code = User::encrypt_decrypt("encrypt", User::KEY, $data_recovery["id_recovery"]);
 
 				$link = "http://www.hcodecommerce.com.br:8080/".(($is_admin == True) ? "admin/" : "")."forgot/reset?code=$code";
 
@@ -231,7 +239,7 @@ class User extends Model {
 
 	public static function validForgotDecrypt($code) {
 		# Descriptografar
-		$id_recovery = User::encrypt_decrypt("decrypt", $code);
+		$id_recovery = User::encrypt_decrypt("decrypt", User::KEY, $code);
 
 		$sql = new Sql();
 
@@ -277,38 +285,6 @@ class User extends Model {
 		));
 	}
 
-	public static function Set_Error($message) {
-		$_SESSION[User::ERROR] = $message;
-	}
-
-	public static function Get_Error() {
-		$message = (isset($_SESSION[User::ERROR])) ? $_SESSION[User::ERROR] : "";
-
-		User::Clear_Error();
-
-		return $message;
-	}
-
-	public static function Clear_Error() {
-		$_SESSION[User::ERROR] = NULL;
-	}
-
-	public static function Set_Register_Error($message) {
-		$_SESSION[User::ERROR_REGISTER] = $message;
-	}
-
-	public static function Get_Register_Error() {
-		$message = (isset($_SESSION[User::ERROR_REGISTER])) ? $_SESSION[User::ERROR_REGISTER] : "";
-
-		User::Clear_Register_Error();
-
-		return $message;
-	}
-
-	public static function Clear_Register_Error() {
-		$_SESSION[User::ERROR_REGISTER] = NULL;
-	}
-
 	public static function Check_If_Login_Exists($login) {
 		$sql = new Sql();
 
@@ -317,6 +293,33 @@ class User extends Model {
 		));
 
 		return (count($results) > 0);
+	}
+
+	public static function Get_Message_Type($type) {
+		$constants = array(
+			"Success" => User::SUCCESS,
+			"Error" => User::ERROR,
+			"Register" => User::REGISTER,
+		);
+
+		return $constants[$type];
+	}
+
+	public static function Set_Message($message, $type) {
+		$_SESSION[User::Get_Message_Type($type)] = $message;
+	}
+
+	public static function Get_Message($type) {
+
+		$message = (isset($_SESSION[User::Get_Message_Type($type)])) ? $_SESSION[User::Get_Message_Type($type)] : "";
+
+		User::Clear_Message($type);
+
+		return $message;
+	}
+
+	public static function Clear_Message($type) {
+		$_SESSION[User::Get_Message_Type($type)] = NULL;
 	}
 }
 

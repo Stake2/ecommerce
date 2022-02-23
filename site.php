@@ -10,7 +10,7 @@ use \Hcode\Model\User;
 $app->get("/", function() {
 	$products = Product::listAll();
 
-    $page = new Page();
+	$page = new Page();
 
 	$page -> setTpl("Index", array(
 		"products" => Product::checkList($products),
@@ -65,7 +65,7 @@ $app->get("/cart", function() {
 	$page -> setTpl("cart", array(
 		"cart" => $cart -> getValues(),
 		"products" => $cart -> Get_Products(),
-		"error" => Cart::Get_Error(),
+		"error" => Cart::Get_Message("Error"),
 	));
 });
 
@@ -140,8 +140,8 @@ $app->get("/login", function() {
 	$page = new Page();
 
 	$page -> setTpl("login", array(
-		"error" => User::Get_Error(),
-		"error_register" => User::Get_Register_Error(),
+		"error" => User::Get_Message("Error"),
+		"error_register" => User::Get_Message("Register"),
 		"register_values" => (isset($_SESSION["register_values"])) ? $_SESSION["register_values"] : 
 		array(
 			"name" => "",
@@ -157,7 +157,7 @@ $app->post("/login", function() {
 	}
 
 	catch (Exception $e) {
-		User::Set_Error($e -> getMessage());
+		User::Set_Message($e -> getMessage(), "Error");
 	}
 
 	header("Location: /checkout");
@@ -193,7 +193,7 @@ $app->get("/register", function() {
 		$portuguese_field_name = $portuguese_field_names[$i];
 
 		if (!isset($_POST[$field_name]) or $_POST[$field_name] == "") {
-			User::Set_Register_Error("Preencha ".$portuguese_field_name.".");
+			User::Set_Message("Preencha ".$portuguese_field_name.".", "Register");
 
 			header("Location: /login");
 			exit;
@@ -203,7 +203,7 @@ $app->get("/register", function() {
 	}
 
 	if (User::Check_If_Login_Exists($_POST["email"]) == True) {
-		User::Set_Register_Error("Este endereço de email já está sendo usado por outro usuário.");
+		User::Set_Message("Este endereço de email já está sendo usado por outro usuário.", "Register");
 
 		header("Location: /login");
 		exit;
@@ -225,6 +225,35 @@ $app->get("/register", function() {
 	User::login($_POST["email"], $_POST["password"]);
 
 	header("Location: /checkout");
+	exit;
+});
+
+$app->get("/forgot", function(){
+	$page = new Page();
+	
+	$page->setTpl("forgot", array(
+		"error_register" => User::Get_Message("Register"),
+	));
+});
+
+$app->post("/forgot", function(){
+	if(isset($_POST["email"]) == False or $_POST["email"] == ""){
+		User::Set_Message("Favor digitar um endereço de e-mail válido.", "Register");
+
+		header("Location: /forgot");
+		exit;
+	}
+
+	if(User::Check_If_Login_Exists($_POST["email"]) == False){
+		User::Set_Message("Este endereço de e-mail não existe na nossa base de dados.", "Register");
+
+		header("Location: /forgot");
+		exit;
+	}
+
+	$user = User::getForgot($_POST["email"], $is_admin = False);
+
+	header("Location: /forgot/sent");
 	exit;
 });
 
@@ -276,6 +305,65 @@ $app->post("/forgot/reset", function() {
 	$page = new Page();
 
 	$page -> setTpl("forgot-reset-success");
+});
+
+$app->get("/profile", function() {
+	User::verifyLogin(False);
+
+	$user = User::Get_From_Session();
+
+	$page = new Page();
+
+	$page -> setTpl("profile", array(
+		"user" => $user -> getValues(),
+		"profile_message" => User::Get_Message("Success"),
+		"profile_error" => User::Get_Message("Error"),
+	));
+});
+
+$app->post("/profile", function() {
+	User::verifyLogin(False);
+
+	if (!isset($_POST["des_person"]) or $_POST["des_person"] === "") {
+		User::Set_Message("Preencha seu nome.", "Error");
+
+		header("Location: /profile");
+		exit;
+	}
+
+	if (!isset($_POST["des_email"]) or $_POST["des_email"] === "") {
+		User::Set_Message("Preencha seu e-mail.", "Error");
+
+		header("Location: /profile");
+		exit;
+	}
+
+	$user = User::Get_From_Session();
+
+	if ($_POST["des_email"] !== $user -> getdes_email()) {
+		if (User::Check_If_Login_Exists($_POST["email"]) == True) {
+			User::Set_Message("Este endereço de email já está cadastrado.", "Error");
+
+			header("Location: /profile");
+			exit;
+		}
+	}
+
+	$_POST["id_user"] = $user -> getid_user();
+	$_POST["is_admin"] = $user -> getis_admin();
+	$_POST["des_password"] = $user -> getdes_password();
+	$_POST["des_login"] = $_POST["des_email"];
+
+	$user -> setData($_POST);
+
+	$user -> update();
+
+	$_SESSION[User::SESSION] = $user -> getValues();
+
+	User::Set_Message("Dados alterados com sucesso.", "Success");
+
+	header("Location: /profile");
+	exit;
 });
 
 ?>
