@@ -162,9 +162,9 @@ class Cart extends Model {
 		$totals = $this -> Get_Product_Totals();
 
 		if ($totals["nr_quantity"] > 0) {
-			if ($totals["vl_height"] < 2) $totals["vl_height"] = 2;
-			if ($totals["vl_length"] < 16) $totals["vl_length"] = 16;
-			if ($totals["vl_width"] < 11) $totals["vl_width"] = 11;
+			if ($totals["vl_height"] < 2) $totals["vl_height"] = 3;
+			if ($totals["vl_length"] < 16) $totals["vl_length"] = 17;
+			if ($totals["vl_width"] < 11) $totals["vl_width"] = 12;
 
 			$query_string = http_build_query(array(
 				"nCdEmpresa" => "",
@@ -204,7 +204,7 @@ class Cart extends Model {
 		}
 
 		else {
-			
+
 		}
 	}
 

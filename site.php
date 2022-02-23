@@ -65,7 +65,7 @@ $app->get("/cart", function() {
 	$page -> setTpl("cart", array(
 		"cart" => $cart -> getValues(),
 		"products" => $cart -> Get_Products(),
-		"error" => Cart::Get_Message_Error(),
+		"error" => Cart::Get_Error(),
 	));
 });
 
@@ -226,6 +226,56 @@ $app->get("/register", function() {
 
 	header("Location: /checkout");
 	exit;
+});
+
+$app->get("/forgot", function() {
+	$page = new Page();
+
+	$page -> setTpl("forgot");
+});
+
+$app->post("/forgot", function() {
+	$user = User::getForgot($_POST["email"], $is_admin = False);
+
+	header("Location: /forgot/sent");
+	exit;
+});
+
+$app->get("/forgot/sent", function() {
+	$page = new Page();
+
+	$page -> setTpl("forgot-sent");
+});
+
+$app->get("/forgot/reset", function() {
+	$user = User::validForgotDecrypt($_GET["code"]);
+
+	$page = new Page();
+
+	$page -> setTpl("forgot-reset", array(
+		"name" => $user["des_person"],
+		"code" => $_GET["code"],
+	));
+});
+
+$app->post("/forgot/reset", function() {
+	$forgot = User::validForgotDecrypt($_POST["code"]);
+
+	User::setForgotUsed($forgot["id_recovery"]);
+
+	$user = new User();
+
+	$user -> get((int)$forgot["id_user"]);
+
+	$password = password_hash($_POST["password"], PASSWORD_DEFAULT, array(
+		"cost" => 12,
+	));
+
+	$user -> setPassword($password);
+
+	$page = new Page();
+
+	$page -> setTpl("forgot-reset-success");
 });
 
 ?>

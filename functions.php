@@ -3,7 +3,9 @@
 use \Hcode\Model\User;
 use \Hcode\DB\Sql;
 
-function formatPrice(float $vl_price) {
+function formatPrice($vl_price) {
+	if (!$vl_price > 0) $vl_price = 0;
+
 	return number_format($vl_price, 2, ",", ".");
 }
 
