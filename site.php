@@ -65,7 +65,7 @@ $app->get("/cart", function() {
 	$page -> setTpl("cart", array(
 		"cart" => $cart -> getValues(),
 		"products" => $cart -> Get_Products(),
-		"error" => Cart::Get_Message("Error"),
+		"error" => Cart::Get_Error("Error"),
 	));
 });
 
@@ -124,16 +124,88 @@ $app->post("/cart/freight", function() {
 $app->get("/checkout", function() {
 	User::verifyLogin(False);
 
+	$address = new Address();
 	$cart = Cart::Get_From_Session();
 
-	$address = new Address();
+	if (isset($_GET["zip_code"]) == True) {
+		$_GET["zip_code"] = $cart -> getdes_zip_code();
+	}
+
+	if (isset($_GET["zip_code"]) == True) {
+		$address -> Load_From_CEP($_GET["zip_code"]);
+
+		$cart -> setdes_zip_code($_GET["zip_code"]);
+
+		$cart -> save();
+
+		$cart -> Get_Calculate_Total();
+	}
+
+	if (!$address -> getdes_address()) $address -> setdes_address("");
+	if (!$address -> getdes_complement()) $address -> setdes_complement("");
+	if (!$address -> getdes_district()) $address -> setdes_district("");
+	if (!$address -> getdes_city()) $address -> setdes_city("");
+	if (!$address -> getdes_state()) $address -> setdes_state("");
+	if (!$address -> getdes_zip_code()) $address -> setdes_zip_code("");
 
 	$page = new Page();
 
 	$page -> setTpl("checkout", array(
 		"cart" => $cart -> getValues(),
 		"address" => $address -> getValues(),
+		"products" => $cart -> Get_Products(),
+		"error" => Address::Get_Error(),
 	));
+});
+
+$app->post("/checkout", function() {
+	User::verifyLogin(False);
+
+	$field_names = array(
+		"zip_code",
+		"des_address",
+		"des_district",
+		"des_city",
+		"des_state",
+		"des_country",
+	);
+
+	$portuguese_field_names = array(
+		"o CEP",
+		"o endereço",
+		"o bairro",
+		"a cidade",
+		"o estado",
+		"o país",
+	);
+
+	$i = 0;
+	foreach ($field_names as $field_name) {
+		$portuguese_field_name = $portuguese_field_names[$i];
+
+		if (!isset($_POST[$field_name]) or $_POST[$field_name] == "") {
+			Address::Set_Error("Informe ".$portuguese_field_name.".");
+
+			header("Location: /checkout");
+			exit;
+		}
+
+		$i++;
+	}
+
+	$user = User::Get_From_Session();
+
+	$address = new Address();
+
+	$_POST["des_zip_code"] = $_POST["zip_code"];
+	$_POST["id_person"] = $user -> getid_person();
+
+	$address -> setData($_POST);
+
+	$address -> save();
+
+	header("Location: /order");
+	exit;
 });
 
 $app->get("/login", function() {
