@@ -249,6 +249,8 @@ class Cart extends Model {
 
 		$this -> setvl_subtotal($totals["vl_price"]);
 		$this -> setvl_total($totals["vl_price"] + $this -> getvl_freight());
+
+		return $totals;
 	}
 }
 

@@ -44,17 +44,17 @@ class Address extends Model {
 		$results = $sql -> select("CALL sp_addresses_save(:id_address, :id_person, :des_address, :des_complement, :des_city, :des_state, :des_country, :des_zip_code, :des_district)", array(
 			":id_address" => $this -> getid_address(),
 			":id_person" => $this -> getid_person(),
-			":des_address" => utf8_decode($this -> getdes_address()),
-			":des_complement" => utf8_decode($this -> getdes_complement()),
-			":des_city" => utf8_decode($this -> getdes_city()),
-			":des_state" => utf8_decode($this -> getdes_state()),
-			":des_country" => utf8_decode($this -> getdes_country()),
+			":des_address" => utf8_encode($this -> getdes_address()),
+			":des_complement" => utf8_encode($this -> getdes_complement()),
+			":des_city" => utf8_encode($this -> getdes_city()),
+			":des_state" => utf8_encode($this -> getdes_state()),
+			":des_country" => utf8_encode($this -> getdes_country()),
 			":des_zip_code" => $this -> getdes_zip_code(),
 			":des_district" => $this -> getdes_district(),
 		));
 
 		if (count($results) > 0) {
-			$this -> setData($results[0]);
+			$this -> setData($results[0]);	
 		}
 	}
 

@@ -5,6 +5,8 @@ use \Hcode\Model\Product;
 use \Hcode\Model\Category;
 use \Hcode\Model\Cart;
 use \Hcode\Model\Address;
+use \Hcode\Model\Order;
+use \Hcode\Model\Order_Status;
 use \Hcode\Model\User;
 
 $app->get("/", function() {
@@ -125,11 +127,12 @@ $app->get("/checkout", function() {
 	User::verifyLogin(False);
 
 	$address = new Address();
+
 	$cart = Cart::Get_From_Session();
 
-	if (isset($_GET["zip_code"]) == True) {
-		$_GET["zip_code"] = $cart -> getdes_zip_code();
-	}
+	#if (isset($_GET["zip_code"]) == True) {
+	#	$_GET["zip_code"] = $cart -> getdes_zip_code();
+	#}
 
 	if (isset($_GET["zip_code"]) == True) {
 		$address -> Load_From_CEP($_GET["zip_code"]);
@@ -144,6 +147,7 @@ $app->get("/checkout", function() {
 	if (!$address -> getdes_address()) $address -> setdes_address("");
 	if (!$address -> getdes_complement()) $address -> setdes_complement("");
 	if (!$address -> getdes_district()) $address -> setdes_district("");
+	if (!$address -> getdes_country()) $address -> setdes_country("");
 	if (!$address -> getdes_city()) $address -> setdes_city("");
 	if (!$address -> getdes_state()) $address -> setdes_state("");
 	if (!$address -> getdes_zip_code()) $address -> setdes_zip_code("");
@@ -204,7 +208,23 @@ $app->post("/checkout", function() {
 
 	$address -> save();
 
-	header("Location: /order");
+	$cart = Cart::Get_From_Session();
+
+	$totals = $cart -> Get_Calculate_Total();
+
+	$order = new Order();
+
+	$order -> setData(array(
+		"id_cart" => $cart -> getid_cart(),
+		"id_user" => $user -> getid_user(),
+		"id_status" => Order_Status::EM_ABERTO,
+		"id_address" => $address -> getid_address(),
+		"vl_total" => $cart -> getvl_total(),
+	));
+
+	$order -> save();
+
+	header("Location: /order/".$order -> getid_order());
 	exit;
 });
 
@@ -436,6 +456,45 @@ $app->post("/profile", function() {
 
 	header("Location: /profile");
 	exit;
+});
+
+$app->get("/order/:id_order", function($id_order) {
+	User::verifyLogin(False);
+
+	$order = new Order();
+
+	$order -> get((int)$id_order);
+
+	$page = new Page();
+
+	$page -> setTpl("payment", array(
+		"order" => $order -> getValues(),
+	));
+});
+
+$app->get("/boleto/:id_order", function($id_order) {
+	User::verifyLogin(False);
+
+	$order = new Order();
+
+	$order -> get((int)$id_order);
+
+	require "res/boletophp/variaveis.php";
+
+	// DADOS DO BOLETO PARA O SEU CLIENTE
+	$valor_cobrado = formatPrice($order -> getvl_total()); // Valor - REGRA: Sem pontos na milhar e tanto faz com "." ou "," ou com 1 ou 2 ou sem casa decimal
+	$valor_cobrado = str_replace(",", ".",$valor_cobrado);
+	$valor_boleto=number_format($valor_cobrado+$taxa_boleto, 2, ",", "");
+	$dados_boleto["nosso_numero"] = $order -> getid_order();  // Nosso numero - REGRA: Máximo de 8 caracteres!
+	$dados_boleto["numero_documento"] = $order -> getid_order();	// Num do pedido ou nosso numero
+
+	// DADOS DO SEU CLIENTE
+	$dados_boleto["sacado"] = $order -> getdes_person();
+	$dados_boleto["endereco1"] = $order -> getdes_address()." ".$order -> getdes_district();
+	$dados_boleto["endereco2"] = $order -> getdes_city()." ".$order -> getdes_state()." ".$order -> getdes_country()." - CEP: ".$order -> getdes_zip_code();
+	$dados_boleto["valor_boleto"] = $valor_boleto;
+
+	require "res/boletophp/boleto_itau.php";
 });
 
 ?>
