@@ -295,6 +295,26 @@ class User extends Model {
 		return (count($results) > 0);
 	}
 
+	public function Get_Orders() {
+		$sql = new Sql();
+
+		$results = $sql -> select("
+		SELECT *
+		FROM tb_orders a
+		INNER JOIN tb_ordersstatus b USING(id_status)
+		INNER JOIN tb_carts c USING(id_cart)
+		INNER JOIN tb_users d ON d.id_user = a.id_user
+		INNER JOIN tb_addresses e USING(id_address)
+		INNER JOIN tb_persons f ON f.id_person = d.id_person
+		WHERE a.id_user = :id_user
+		",
+		array(
+			"id_user" => $this -> getid_user(),
+		));
+
+		return $results;
+	}
+
 	public static function Get_Message_Type($type) {
 		$constants = array(
 			"Success" => User::SUCCESS,

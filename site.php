@@ -210,7 +210,7 @@ $app->post("/checkout", function() {
 
 	$cart = Cart::Get_From_Session();
 
-	$totals = $cart -> Get_Calculate_Total();
+	$cart -> Get_Calculate_Total();
 
 	$order = new Order();
 
@@ -483,8 +483,8 @@ $app->get("/boleto/:id_order", function($id_order) {
 
 	// DADOS DO BOLETO PARA O SEU CLIENTE
 	$valor_cobrado = formatPrice($order -> getvl_total()); // Valor - REGRA: Sem pontos na milhar e tanto faz com "." ou "," ou com 1 ou 2 ou sem casa decimal
-	$valor_cobrado = str_replace(",", ".",$valor_cobrado);
-	$valor_boleto=number_format($valor_cobrado+$taxa_boleto, 2, ",", "");
+	$valor_cobrado = str_replace(",", ".", $valor_cobrado);
+	$valor_boleto = number_format($valor_cobrado + $taxa_boleto, 2, ",", "");
 	$dados_boleto["nosso_numero"] = $order -> getid_order();  // Nosso numero - REGRA: Máximo de 8 caracteres!
 	$dados_boleto["numero_documento"] = $order -> getid_order();	// Num do pedido ou nosso numero
 
@@ -495,6 +495,40 @@ $app->get("/boleto/:id_order", function($id_order) {
 	$dados_boleto["valor_boleto"] = $valor_boleto;
 
 	require "res/boletophp/boleto_itau.php";
+});
+
+$app->get("/profile/orders", function() {
+	$user = User::Get_From_Session();
+
+	User::verifyLogin(False);
+
+	$page = new Page();
+
+	$page -> setTpl("profile-orders", array(
+		"orders" => $user -> Get_Orders(),
+	));
+});
+ 
+$app->get("/profile/orders/:id_order", function($id_order) {
+	User::verifyLogin(False);
+
+	$order = new Order();
+
+	$order -> get((int)$id_order);
+
+	$cart = new Cart();
+
+	$cart -> get((int)$order -> getid_cart());
+
+	$cart -> Get_Calculate_Total();
+
+	$page = new Page();
+
+	$page -> setTpl("profile-orders-detail", array(
+		"order" => $order -> getValues(),
+		"cart" => $cart -> getValues(),
+		"products" => $cart -> Get_Products(),
+	));
 });
 
 ?>

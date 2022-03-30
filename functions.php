@@ -1,6 +1,7 @@
 <?php 
 
 use \Hcode\Model\User;
+use \Hcode\Model\Cart;
 use \Hcode\DB\Sql;
 
 function formatPrice($vl_price) {
@@ -25,6 +26,22 @@ function Get_User_Name($is_admin = True) {
 	));
 
 	return $results[0]["des_person"];
+}
+
+function Get_Cart_Item_Quantity() {
+	$cart = Cart::Get_From_Session();
+
+	$totals = $cart -> Get_Product_Totals();
+
+	return $totals["nr_quantity"];
+}
+
+function Get_Cart_Sub_Total_Value() {
+	$cart = Cart::Get_From_Session();
+
+	$totals = $cart -> Get_Product_Totals();
+
+	return formatPrice($totals["vl_price"]);
 }
 
 ?>

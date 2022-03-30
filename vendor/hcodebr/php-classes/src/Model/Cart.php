@@ -5,6 +5,7 @@ namespace Hcode\Model;
 use \Hcode\DB\Sql;
 use \Hcode\Model;
 use \Hcode\Model\User;
+use \Hcode\Model\Product;
 
 class Cart extends Model {
 	const SESSION = "Cart";
