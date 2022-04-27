@@ -10,6 +10,10 @@ function formatPrice($vl_price) {
 	return number_format($vl_price, 2, ",", ".");
 }
 
+function format_date($date) {
+	return date("d/m/Y", strtotime($date));
+}
+
 function checkLogin($is_admin = True) {
 	return User::Check_Login($is_admin);
 }

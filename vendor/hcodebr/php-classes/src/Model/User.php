@@ -26,6 +26,10 @@ class User extends Model {
 
 		$data = $results[0];
 
+		echo $data["des_password"];
+		echo "<br>";
+		echo User::encrypt_decrypt("encrypt", User::KEY, $password);
+
 		if (password_verify($password, $data["des_password"]) === True) {
 			$user = new User();
 

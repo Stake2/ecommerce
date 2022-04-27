@@ -18,6 +18,10 @@ $app->get("/admin/login", function() {
 		"footer" => False,
 	]);
 
+	if (isset($_POST["password"])) {
+		echo $_POST["password"];
+	}
+
 	$page -> setTpl("Login");
 });
 
