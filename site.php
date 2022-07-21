@@ -12,9 +12,12 @@ use \Hcode\Model\User;
 $app->get("/", function() {
 	$products = Product::listAll();
 
+	$categories = Category::listAll();
+
 	$page = new Page();
 
 	$page -> setTpl("Index", array(
+		"categories" => $categories,
 		"products" => Product::checkList($products),
 	));
 });
@@ -265,7 +268,6 @@ $app->get("/logout", function() {
 });
 
 $app->get("/register", function() {
-	var_dump("Tal");
 	$_SESSION["register_values"] = $_POST;
 
 	$field_names = array(

@@ -26,11 +26,24 @@ class User extends Model {
 
 		$data = $results[0];
 
+		echo "<br>";
+		echo "<br>";
 		echo $data["des_password"];
 		echo "<br>";
-		echo User::encrypt_decrypt("encrypt", User::KEY, $password);
+		echo "<br>";
+		echo $password;
 
-		if (password_verify($password, $data["des_password"]) === True) {
+		$testing_password_hash = False;
+
+		if ($testing_password_hash == True) {
+			$check = password_verify($password, $data["des_password"]);
+		}
+
+		if ($testing_password_hash == False) {
+			$check = ($password == $data["des_password"]);
+		}
+
+		if ($check == True) {
 			$user = new User();
 
 			$data["des_person"] = utf8_encode($data["des_person"]);
@@ -91,7 +104,16 @@ class User extends Model {
 	public static function listAll() {
 		$sql = new Sql();
 
-		return $sql -> select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(id_person) ORDER BY b.des_person");
+		$results = $sql -> select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(id_person) ORDER BY b.des_person");
+
+		$i = 0;
+		foreach ($results as $result) {
+			$results[$i]["des_password"] = User::encrypt_decrypt("decrypt", User::KEY, $results[$i]["des_password"]);
+
+			$i++;
+		}
+
+		return $results;
 	}
 
 	public function getLogged() {
@@ -136,11 +158,11 @@ class User extends Model {
 			":id_user" => $id_user,
 		));
 
-		echo $id_user;
-
 		$data = $results[0];
 
 		$data["des_person"] = utf8_encode($data["des_person"]);
+
+		$data["des_password_show"] = User::encrypt_decrypt("decrypt", User::KEY, $data["des_password"]);
 
 		$this -> setData($data);
 	}
@@ -166,6 +188,8 @@ class User extends Model {
 			":is_admin" => $this->getis_admin(),
 		));
 
+		$results[0]["des_password_show"] = $_POST["des_password"];
+
 		$this -> setData($results[0]);
 	}
 
@@ -177,25 +201,33 @@ class User extends Model {
 		));
 	}
 
-	private static function encrypt_decrypt($action, $key, $string) {
+	public static function encrypt_decrypt($action, $key, $string) {
 		$output = False;
 		$cipher = "AES-256-CBC";
 				
 		if ($action === "encrypt") {
-			$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher));
-			$output = base64_encode(openssl_encrypt($string, $cipher, $key, 0, $iv));
-
-			return $output."::".bin2hex($iv);
-		}
-
-		else if ($action === "decrypt") {
-			$string = explode("::", $string);
-			$toDecode = base64_decode($string[0]);
-			$iv = hex2bin($string[1]);
-			$output = openssl_decrypt($toDecode, $cipher, $key, 0, $iv);
+			#$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher));
+			#$output = base64_encode(openssl_encrypt($string, $cipher, $key, 0, $iv))."::".bin2hex($iv);
+			$output = $string."_encrypted";
 
 			return $output;
 		}
+
+		else if ($action === "decrypt") {
+			#$string = explode("::", $string);
+			#$toDecode = base64_decode($string[0]);
+			#$iv = hex2bin($string[1]);
+			#$output = openssl_decrypt($toDecode, $cipher, $key, 0, $iv);
+			$output = str_replace("_encrypted", "", $string);
+
+			return $output;
+		}
+	}
+
+	public static function Get_Password_Hash($password) {
+		return password_hash($password, PASSWORD_DEFAULT, [
+			'cost'=>12
+		]);
 	}
 
 	public static function getForgot($email, $is_admin = True) {
@@ -317,6 +349,53 @@ class User extends Model {
 		));
 
 		return $results;
+	}
+
+	public static function Get_Page($page = 1, $items_per_page = 10) {
+		$start = ($page - 1) * $items_per_page;
+
+		$sql = new Sql();
+
+		$results = $sql -> select("
+		SELECT SQL_CALC_FOUND_ROWS * FROM
+		tb_users a
+		INNER JOIN tb_persons b USING(id_person)
+		ORDER BY b.des_person
+		LIMIT $start, $items_per_page;
+		");
+
+		$result_total = $sql -> select("SELECT FOUND_ROWS() AS nr_total;");
+
+		return array(
+			"data" => $results,
+			"total" => (int)$result_total[0]["nr_total"],
+			"pages" => ceil($result_total[0]["nr_total"] / $items_per_page),
+		);
+	}
+
+	public static function Get_Page_Search($search, $page = 1, $items_per_page = 10) {
+		$start = ($page - 1) * $items_per_page;
+
+		$sql = new Sql();
+
+		$results = $sql -> select("
+			SELECT SQL_CALC_FOUND_ROWS * FROM
+			tb_users a
+			INNER JOIN tb_persons b USING(id_person)
+			WHERE b.des_person LIKE :search OR b.des_email = :search OR a.des_login LIKE :search
+			ORDER BY b.des_person
+			LIMIT $start, $items_per_page;
+		", array(
+			":search" => "%".$search."%",
+		));
+
+		$result_total = $sql -> select("SELECT FOUND_ROWS() AS nr_total;");
+
+		return array(
+			"data" => $results,
+			"total" => (int)$result_total[0]["nr_total"],
+			"pages" => ceil($result_total[0]["nr_total"] / $items_per_page),
+		);
 	}
 
 	public static function Get_Message_Type($type) {

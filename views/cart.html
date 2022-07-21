@@ -80,7 +80,7 @@
                                     
                                     <div class="coupon">
                                         <label for="cep">CEP:</label>
-                                        <input type="text" placeholder="00000-000" value="{$cart.des_zip_code}" id="cep" class="input-text" name="zip_code">
+                                        <input type="text" placeholder="00000-000" value="{if="isset($cart.des_zip_code)"}$cart.des_zip_code{/if}" id="cep" class="input-text" name="zip_code">
                                         <input type="submit" formmethod="post" formaction="/cart/freight" value="CÁLCULAR" class="button">
                                     </div>
 
@@ -99,7 +99,7 @@
 
                                             <tr class="shipping">
                                                 <th>Frete</th>
-                                                <td>R$ {function="formatPrice($cart.vl_freight)"}{if="$cart.nr_days > 0"} <small>prazo de {$cart.nr_days} dia(s)</small>{/if}</td>
+                                                <td>R$ {if="isset($cart.vl_freight)"}{function="formatPrice($cart.vl_freight)"}{/if} <small>prazo de {if="isset($cart.nr_days) and $cart.nr_days > 0"}{$cart.nr_days}{/if} dia(s)</small></td>
                                             </tr>
 
                                             <tr class="order-total">

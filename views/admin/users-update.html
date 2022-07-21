@@ -26,11 +26,15 @@
             </div>
             <div class="form-group">
               <label for="des_login">Login</label>
-              <input type="text" class="form-control" id="des_login" name="des_login" placeholder="Digite o login"  value="{$user.des_login}">
+              <input type="text" class="form-control" id="des_login" name="des_login" placeholder="Digite o login" value="{$user.des_login}">
+            </div>
+            <div class="form-group">
+              <label for="des_password">Senha</label>
+              <input type="tel" class="form-control" id="des_password" name="des_password" placeholder="Digite a senha" value="{$user.des_password_show}">
             </div>
             <div class="form-group">
               <label for="nr_phone">Telefone</label>
-              <input type="tel" class="form-control" id="nr_phone" name="nr_phone" placeholder="Digite o telefone"  value="{$user.nr_phone}">
+              <input type="tel" class="form-control" id="nr_phone" name="nr_phone" placeholder="Digite o telefone" value="{$user.nr_phone}">
             </div>
             <div class="form-group">
               <label for="des_email">E-mail</label>
@@ -38,7 +42,7 @@
             </div>
             <div class="checkbox">
               <label>
-                <input type="checkbox" name="is_admin" value="1" {if="$user.is_admin == 1"}checked{/if}> Acesso de Administrador
+                <input type="checkbox" name="is_admin" value="1"{if="$user.is_admin == 1"} checked{/if}> Acesso de Administrador
               </label>
             </div>
           </div>

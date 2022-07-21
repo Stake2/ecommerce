@@ -18,15 +18,13 @@ $app->get("/admin/login", function() {
 		"footer" => False,
 	]);
 
-	if (isset($_POST["password"])) {
-		echo $_POST["password"];
-	}
-
 	$page -> setTpl("Login");
 });
 
 $app->post("/admin/login", function() {
-    User::login($_POST["login"], $_POST["password"]);
+	$_POST["password"] = User::encrypt_decrypt("encrypt", User::KEY, $_POST["password"]);
+
+	User::login($_POST["login"], $_POST["password"]);
 
 	header("Location: /admin");
 	exit;
