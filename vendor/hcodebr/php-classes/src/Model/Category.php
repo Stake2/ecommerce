@@ -137,6 +137,51 @@ class Category extends Model {
 			":id_product" => $product -> getid_product(),
 		));
 	}
+
+	public static function Get_Page($page = 1, $items_per_page = 10) {
+		$start = ($page - 1) * $items_per_page;
+
+		$sql = new Sql();
+
+		$results = $sql -> select("
+			SELECT SQL_CALC_FOUND_ROWS *
+			FROM tb_categories
+			ORDER BY des_category
+			LIMIT $start, $items_per_page;
+		");
+
+		$result_total = $sql -> select("SELECT FOUND_ROWS() AS nr_total;");
+
+		return array(
+			"data" => $results,
+			"total" => (int)$result_total[0]["nr_total"],
+			"pages" => ceil($result_total[0]["nr_total"] / $items_per_page),
+		);
+	}
+
+	public static function Get_Page_Search($search, $page = 1, $items_per_page = 10) {
+		$start = ($page - 1) * $items_per_page;
+
+		$sql = new Sql();
+
+		$results = $sql -> select("
+			SELECT SQL_CALC_FOUND_ROWS *
+			FROM tb_categories
+			WHERE des_category LIKE :search
+			ORDER BY des_category
+			LIMIT $start, $items_per_page;
+		", array(
+			":search" => "%".$search."%",
+		));
+
+		$result_total = $sql -> select("SELECT FOUND_ROWS() AS nr_total;");
+
+		return array(
+			"data" => $results,
+			"total" => (int)$result_total[0]["nr_total"],
+			"pages" => ceil($result_total[0]["nr_total"] / $items_per_page),
+		);
+	}
 }
 
 ?>

@@ -6,7 +6,7 @@
     Lista de Categorias
   </h1>
   <ol class="breadcrumb">
-    <li><a href="/admin"><i class="fa fa-dashboard"></i> Home</a></li>
+    <li><a href="/admin"><i class="fa fa-dashboard"></i> Início</a></li>
     <li class="active"><a href="/admin/categories">Categorias</a></li>
   </ol>
 </section>
@@ -20,6 +20,16 @@
             
             <div class="box-header">
               <a href="/admin/categories/create" class="btn btn-success">Cadastrar Categoria</a>
+              <div class="box-tools">
+                <form action="/admin/categories">
+                  <div class="input-group input-group-sm" style="width: 150px;">
+                    <input type="text" name="search" class="form-control pull-right" placeholder="Search" value="{$search}">
+                    <div class="input-group-btn">
+                      <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                    </div>
+                  </div>
+                </form>
+              </div>
             </div>
 
             <div class="box-body no-padding">
@@ -28,7 +38,7 @@
                   <tr>
                     <th style="width: 10px">#</th>
                     <th>Nome da Categoria</th>
-                    <th style="width: 210px">&nbsp;</th>
+                    <th style="width: 240px">&nbsp;</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -37,7 +47,7 @@
                     <td>{$value.id_category}</td>
                     <td>{$value.des_category}</td>
                     <td>
-					  <a href="/admin/categories/{$value.id_category}/products" class="btn btn-default btn-xs"><i class="fa fa-edit"></i> Produtos</a>
+                      <a href="/admin/categories/{$value.id_category}/products" class="btn btn-default btn-xs"><i class="fa fa-edit"></i> Produtos</a>
                       <a href="/admin/categories/{$value.id_category}" class="btn btn-primary btn-xs"><i class="fa fa-edit"></i> Editar</a>
                       <a href="/admin/categories/{$value.id_category}/delete" onclick="return confirm('Deseja realmente excluir este registro?')" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> Excluir</a>
                     </td>
@@ -47,6 +57,13 @@
               </table>
             </div>
             <!-- /.box-body -->
+            <div class="box-footer clearfix">
+              <ul class="pagination pagination-sm no-margin pull-right">
+                {loop="$pages"}
+                <li><a href="{$value.href}"{if="isset($_GET['page']) and $value.text == $_GET['page']"} style="background-color: black!important;color: white!important;"{/if}>{$value.text}</a></li>
+                {/loop}
+              </ul>
+            </div>
           </div>
   	</div>
   </div>
