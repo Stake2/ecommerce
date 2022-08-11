@@ -7,12 +7,36 @@ use \Hcode\Model\Product;
 $app->get("/admin/products", function() {
 	User::verifyLogin();
 
-	$products = Product::listAll();
+	$search = (isset($_GET["search"])) ? $_GET["search"] : "";
+	$page = (isset($_GET["page"])) ? (int)$_GET["page"] : 1;
+
+	if ($search != "") {
+		$pagination = Product::Get_Page_Search($search);
+	}
+
+	else {
+		$pagination = Product::Get_Page($page);
+	}
+
+	$pages = array();
+
+	for ($i = 0; $i < $pagination["pages"]; $i++) {
+		array_push($pages, array(
+			"href" => "/admin/products?".http_build_query([
+				"page" => $i + 1,
+				"search" => $search,
+			]),
+			"text" => $i + 1,
+			"active" => (($i + 1) == $page),
+		));
+	}
 
     $page = new PageAdmin();
 
 	$page -> setTpl("products", array(
-		"products" => $products,
+		"products" => $pagination["data"],
+		"search" => $search,
+		"pages" => $pages,
 	));
 });
 

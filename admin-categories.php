@@ -28,6 +28,7 @@ $app->get("/admin/categories", function() {
 				"search" => $search,
 			]),
 			"text" => $i + 1,
+			"active" => (($i + 1) == $page),
 		));
 	}
 

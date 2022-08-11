@@ -60,7 +60,7 @@
             <div class="box-footer clearfix">
               <ul class="pagination pagination-sm no-margin pull-right">
                 {loop="$pages"}
-                <li><a href="{$value.href}"{if="isset($_GET['page']) and $value.text == $_GET['page']"} style="background-color: black!important;color: white!important;"{/if}>{$value.text}</a></li>
+                <li {if="$value.active"}class="active"{/if}><a href="{$value.href}">{$value.text}</a></li>
                 {/loop}
               </ul>
             </div>

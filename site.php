@@ -67,6 +67,10 @@ $app->get("/cart", function() {
 
 	$cart = Cart::Get_From_Session();
 
+	if ($cart -> getValues()["vl_freight"] == "0.00") {
+		$cart -> setvl_freight("1000");
+	}
+
 	$page -> setTpl("cart", array(
 		"cart" => $cart -> getValues(),
 		"products" => $cart -> Get_Products(),
@@ -132,10 +136,6 @@ $app->get("/checkout", function() {
 	$address = new Address();
 
 	$cart = Cart::Get_From_Session();
-
-	#if (isset($_GET["zip_code"]) == True) {
-	#	$_GET["zip_code"] = $cart -> getdes_zip_code();
-	#}
 
 	if (isset($_GET["zip_code"]) == True) {
 		$address -> Load_From_CEP($_GET["zip_code"]);
@@ -218,6 +218,7 @@ $app->post("/checkout", function() {
 	$order = new Order();
 
 	$order -> setData(array(
+		"id_order" => $order -> getid_order(),
 		"id_cart" => $cart -> getid_cart(),
 		"id_user" => $user -> getid_user(),
 		"id_status" => Order_Status::EM_ABERTO,
@@ -485,8 +486,8 @@ $app->get("/boleto/:id_order", function($id_order) {
 
 	// DADOS DO BOLETO PARA O SEU CLIENTE
 	$valor_cobrado = formatPrice($order -> getvl_total()); // Valor - REGRA: Sem pontos na milhar e tanto faz com "." ou "," ou com 1 ou 2 ou sem casa decimal
-	$valor_cobrado = str_replace(",", ".", $valor_cobrado);
-	$valor_boleto = number_format($valor_cobrado + $taxa_boleto, 2, ",", "");
+	$valor_cobrado = (float)$valor_cobrado;
+	$valor_boleto = number_format($valor_cobrado, 3, ",", "");
 	$dados_boleto["nosso_numero"] = $order -> getid_order();  // Nosso numero - REGRA: Máximo de 8 caracteres!
 	$dados_boleto["numero_documento"] = $order -> getid_order();	// Num do pedido ou nosso numero
 

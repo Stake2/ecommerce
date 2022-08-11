@@ -22,6 +22,17 @@ class Order extends Model {
 			":vl_total" => $this -> getvl_total(),
 		));
 
+		$this -> setData(array("id_order" => $results[0]["id_order"]));
+
+		$order = $this -> getid_order();
+		$cart = $this -> getid_cart();
+		$user = $this -> getid_user();
+		$status = $this -> getid_status();
+		$address = $this -> getid_address();
+		$total = $this -> getvl_total();
+
+		echo "CALL sp_orders_save($order, $cart, $user, $status, $address, $total)";
+
 		if (count($results) > 0) {
 			$this -> setData($results[0]);
 		}
@@ -31,14 +42,14 @@ class Order extends Model {
 		$sql = new Sql();
 
 		$results = $sql -> select("
-		SELECT *
-		FROM tb_orders a
-		INNER JOIN tb_ordersstatus b USING(id_status)
-		INNER JOIN tb_carts c USING(id_cart)
-		INNER JOIN tb_users d ON d.id_user = a.id_user
-		INNER JOIN tb_addresses e USING(id_address)
-		INNER JOIN tb_persons f ON f.id_person = d.id_person
-		WHERE a.id_order = :id_order
+			SELECT *
+			FROM tb_orders a
+			INNER JOIN tb_ordersstatus b USING(id_status)
+			INNER JOIN tb_carts c USING(id_cart)
+			INNER JOIN tb_users d ON d.id_user = a.id_user
+			INNER JOIN tb_addresses e USING(id_address)
+			INNER JOIN tb_persons f ON f.id_person = d.id_person
+			WHERE a.id_order = :id_order
 		",
 		array(
 			"id_order" => $id_order,
@@ -53,14 +64,14 @@ class Order extends Model {
 		$sql = new Sql();
 
 		$results = $sql -> select("
-		SELECT *
-		FROM tb_orders a
-		INNER JOIN tb_ordersstatus b USING(id_status)
-		INNER JOIN tb_carts c USING(id_cart)
-		INNER JOIN tb_users d ON d.id_user = a.id_user
-		INNER JOIN tb_addresses e USING(id_address)
-		INNER JOIN tb_persons f ON f.id_person = d.id_person
-		ORDER BY a.dt_register DESC
+			SELECT *
+			FROM tb_orders a
+			INNER JOIN tb_ordersstatus b USING(id_status)
+			INNER JOIN tb_carts c USING(id_cart)
+			INNER JOIN tb_users d ON d.id_user = a.id_user
+			INNER JOIN tb_addresses e USING(id_address)
+			INNER JOIN tb_persons f ON f.id_person = d.id_person
+			ORDER BY a.dt_register DESC
 		");
 
 		if (count($results) > 0) {
@@ -83,6 +94,62 @@ class Order extends Model {
 		$cart -> get((int)$this -> getid_cart());
 
 		return $cart;
+	}
+
+	public static function Get_Page($page = 1, $items_per_page = 10) {
+		$start = ($page - 1) * $items_per_page;
+
+		$sql = new Sql();
+
+		$results = $sql -> select("
+			SELECT SQL_CALC_FOUND_ROWS *
+			FROM tb_orders a
+			INNER JOIN tb_ordersstatus b USING(id_status)
+			INNER JOIN tb_carts c USING(id_cart)
+			INNER JOIN tb_users d ON d.id_user = a.id_user
+			INNER JOIN tb_addresses e USING(id_address)
+			INNER JOIN tb_persons f ON f.id_person = d.id_person
+			ORDER BY a.dt_register DESC
+			LIMIT $start, $items_per_page;
+		");
+
+		$result_total = $sql -> select("SELECT FOUND_ROWS() AS nr_total;");
+
+		return array(
+			"data" => $results,
+			"total" => (int)$result_total[0]["nr_total"],
+			"pages" => ceil($result_total[0]["nr_total"] / $items_per_page),
+		);
+	}
+
+	public static function Get_Page_Search($search, $page = 1, $items_per_page = 10) {
+		$start = ($page - 1) * $items_per_page;
+
+		$sql = new Sql();
+
+		$results = $sql -> select("
+			SELECT SQL_CALC_FOUND_ROWS *
+			FROM tb_orders a
+			INNER JOIN tb_ordersstatus b USING(id_status)
+			INNER JOIN tb_carts c USING(id_cart)
+			INNER JOIN tb_users d ON d.id_user = a.id_user
+			INNER JOIN tb_addresses e USING(id_address)
+			INNER JOIN tb_persons f ON f.id_person = d.id_person
+			WHERE a.id_order = :id OR f.des_person LIKE :search
+			ORDER BY a.dt_register DESC
+			LIMIT $start, $items_per_page;
+		", array(
+			":search" => "%".$search."%",
+			":id" => $search,
+		));
+
+		$result_total = $sql -> select("SELECT FOUND_ROWS() AS nr_total;");
+
+		return array(
+			"data" => $results,
+			"total" => (int)$result_total[0]["nr_total"],
+			"pages" => ceil($result_total[0]["nr_total"] / $items_per_page),
+		);
 	}
 
 	public static function Get_Message_Type($type) {

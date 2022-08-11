@@ -189,15 +189,15 @@ class Cart extends Model {
 			$result = $xml -> Servicos -> cServico;
 
 			if ($result -> MsgErro != "") {
-				Cart::Set_Message_Error($result -> MsgErro);
+				$this -> setnr_days("1");
+				$this -> setvl_freight(Cart::Format_Value_To_Decimal("100"));
 			}
 
 			else {
-				Cart::Clear_Message_Error();
+				$this -> setnr_days($result -> PrazoEntrega);
+				$this -> setvl_freight(Cart::Format_Value_To_Decimal($result -> Valor));
 			}
 
-			$this -> setnr_days($result -> PrazoEntrega);
-			$this -> setvl_freight(Cart::Format_Value_To_Decimal($result -> Valor));
 			$this -> setdes_zip_code($zip_code);
 			$this -> save();
 
