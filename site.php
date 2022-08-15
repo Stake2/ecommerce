@@ -148,6 +148,7 @@ $app->get("/checkout", function() {
 	}
 
 	if (!$address -> getdes_address()) $address -> setdes_address("");
+	if (!$address -> getdes_number()) $address -> setdes_number("");
 	if (!$address -> getdes_complement()) $address -> setdes_complement("");
 	if (!$address -> getdes_district()) $address -> setdes_district("");
 	if (!$address -> getdes_country()) $address -> setdes_country("");

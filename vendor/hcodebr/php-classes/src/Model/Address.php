@@ -41,10 +41,11 @@ class Address extends Model {
 	public function save() {
 		$sql = new Sql();
 
-		$results = $sql -> select("CALL sp_addresses_save(:id_address, :id_person, :des_address, :des_complement, :des_city, :des_state, :des_country, :des_zip_code, :des_district)", array(
+		$results = $sql -> select("CALL sp_addresses_save(:id_address, :id_person, :des_address, :des_number, :des_complement, :des_city, :des_state, :des_country, :des_zip_code, :des_district)", array(
 			":id_address" => $this -> getid_address(),
 			":id_person" => $this -> getid_person(),
 			":des_address" => utf8_encode($this -> getdes_address()),
+			":des_number" => utf8_encode($this -> getdes_number()),
 			":des_complement" => utf8_encode($this -> getdes_complement()),
 			":des_city" => utf8_encode($this -> getdes_city()),
 			":des_state" => utf8_encode($this -> getdes_state()),
