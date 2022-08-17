@@ -2,5 +2,6 @@
 /vendor/hcodebr/php-classes/src/Mailer.php
 /vendor/hcodebr/php-classes/src/Mailer/
 /views-cache/
+/views/payment-pagseguro.html
 /res/
 /Database/

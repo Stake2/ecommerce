@@ -130,6 +130,74 @@ $app->post("/cart/freight", function() {
 	exit;
 });
 
+
+$app->get("/order/:id_order", function($id_order) {
+	User::verifyLogin(False);
+
+	$order = new Order();
+
+	$order -> get((int)$id_order);
+
+	$page = new Page();
+
+	var_dump($order -> getid_cart());
+
+	$page -> setTpl("payment", array(
+		"order" => $order -> getValues(),
+	));
+});
+
+$app->get("/order/:id_order/pagseguro", function($id_order) {
+	User::verifyLogin(False);
+
+	$order = new Order();
+
+	$order -> get((int)$id_order);
+
+	$cart = $order -> Get_Cart();
+
+	$page = new Page(array(
+		"header" => False,
+		"footer" => False,
+	));
+
+	$page -> setTpl("payment-pagseguro", array(
+		"order" => $order -> getValues(),
+		"cart" => $cart -> getValues(),
+		"products" => $cart -> Get_Products(),
+		"phone" => array(
+			"area_code" => substr($order -> getnr_phone(), 0, 2),
+			"number" => substr($order -> getnr_phone(), 2, strlen($order -> getnr_phone())),
+		),
+	));
+});
+
+$app->get("/boleto/:id_order", function($id_order) {
+	User::verifyLogin(False);
+
+	$order = new Order();
+
+	$order -> get((int)$id_order);
+
+	require "res/boletophp/variaveis.php";
+
+	// DADOS DO BOLETO PARA O SEU CLIENTE
+	$valor_cobrado = formatPrice($order -> getvl_total()); // Valor - REGRA: Sem pontos na milhar e tanto faz com "." ou "," ou com 1 ou 2 ou sem casa decimal
+	$valor_cobrado = (float)$valor_cobrado;
+	$valor_boleto = number_format($valor_cobrado, 3, ",", "");
+	$dados_boleto["nosso_numero"] = $order -> getid_order();  // Nosso numero - REGRA: Máximo de 8 caracteres!
+	$dados_boleto["numero_documento"] = $order -> getid_order();	// Num do pedido ou nosso numero
+
+	// DADOS DO SEU CLIENTE
+	$dados_boleto["sacado"] = $order -> getdes_person();
+	$dados_boleto["endereco1"] = $order -> getdes_address()." ".$order -> getdes_district();
+	$dados_boleto["endereco2"] = $order -> getdes_city()." ".$order -> getdes_state()." ".$order -> getdes_country()." - CEP: ".$order -> getdes_zip_code();
+	$dados_boleto["valor_boleto"] = $valor_boleto;
+
+	require "res/boletophp/boleto_itau.php";
+});
+
+
 $app->get("/checkout", function() {
 	User::verifyLogin(False);
 
@@ -460,45 +528,6 @@ $app->post("/profile", function() {
 
 	header("Location: /profile");
 	exit;
-});
-
-$app->get("/order/:id_order", function($id_order) {
-	User::verifyLogin(False);
-
-	$order = new Order();
-
-	$order -> get((int)$id_order);
-
-	$page = new Page();
-
-	$page -> setTpl("payment", array(
-		"order" => $order -> getValues(),
-	));
-});
-
-$app->get("/boleto/:id_order", function($id_order) {
-	User::verifyLogin(False);
-
-	$order = new Order();
-
-	$order -> get((int)$id_order);
-
-	require "res/boletophp/variaveis.php";
-
-	// DADOS DO BOLETO PARA O SEU CLIENTE
-	$valor_cobrado = formatPrice($order -> getvl_total()); // Valor - REGRA: Sem pontos na milhar e tanto faz com "." ou "," ou com 1 ou 2 ou sem casa decimal
-	$valor_cobrado = (float)$valor_cobrado;
-	$valor_boleto = number_format($valor_cobrado, 3, ",", "");
-	$dados_boleto["nosso_numero"] = $order -> getid_order();  // Nosso numero - REGRA: Máximo de 8 caracteres!
-	$dados_boleto["numero_documento"] = $order -> getid_order();	// Num do pedido ou nosso numero
-
-	// DADOS DO SEU CLIENTE
-	$dados_boleto["sacado"] = $order -> getdes_person();
-	$dados_boleto["endereco1"] = $order -> getdes_address()." ".$order -> getdes_district();
-	$dados_boleto["endereco2"] = $order -> getdes_city()." ".$order -> getdes_state()." ".$order -> getdes_country()." - CEP: ".$order -> getdes_zip_code();
-	$dados_boleto["valor_boleto"] = $valor_boleto;
-
-	require "res/boletophp/boleto_itau.php";
 });
 
 $app->get("/profile/orders", function() {

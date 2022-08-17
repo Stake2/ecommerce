@@ -33,9 +33,7 @@ class Order extends Model {
 
 		echo "CALL sp_orders_save($order, $cart, $user, $status, $address, $total)";
 
-		if (count($results) > 0) {
-			$this -> setData($results[0]);
-		}
+		$this -> setData($results[0]);
 	}
 
 	public function get(int $id_order) {
