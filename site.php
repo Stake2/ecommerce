@@ -147,31 +147,6 @@ $app->get("/order/:id_order", function($id_order) {
 	));
 });
 
-$app->get("/order/:id_order/pagseguro", function($id_order) {
-	User::verifyLogin(False);
-
-	$order = new Order();
-
-	$order -> get((int)$id_order);
-
-	$cart = $order -> Get_Cart();
-
-	$page = new Page(array(
-		"header" => False,
-		"footer" => False,
-	));
-
-	$page -> setTpl("payment-pagseguro", array(
-		"order" => $order -> getValues(),
-		"cart" => $cart -> getValues(),
-		"products" => $cart -> Get_Products(),
-		"phone" => array(
-			"area_code" => substr($order -> getnr_phone(), 0, 2),
-			"number" => substr($order -> getnr_phone(), 2, strlen($order -> getnr_phone())),
-		),
-	));
-});
-
 $app->get("/boleto/:id_order", function($id_order) {
 	User::verifyLogin(False);
 
@@ -297,8 +272,61 @@ $app->post("/checkout", function() {
 
 	$order -> save();
 
-	header("Location: /order/".$order -> getid_order());
-	exit;
+	switch ((int)$_POST["payment-method"]) {
+		case 1:
+			header("Location: /order/".$order -> getid_order()."/pagseguro");
+			exit;
+
+		case 2:
+			header("Location: /order/".$order -> getid_order()."/paypal");
+			exit;
+	}
+});
+
+$app->get("/order/:id_order/pagseguro", function($id_order) {
+	User::verifyLogin(False);
+
+	$order = new Order();
+
+	$order -> get((int)$id_order);
+
+	$cart = $order -> Get_Cart();
+
+	$page = new Page(array(
+		"header" => False,
+		"footer" => False,
+	));
+
+	$page -> setTpl("payment-pagseguro", array(
+		"order" => $order -> getValues(),
+		"cart" => $cart -> getValues(),
+		"products" => $cart -> Get_Products(),
+		"phone" => array(
+			"area_code" => substr($order -> getnr_phone(), 0, 2),
+			"number" => substr($order -> getnr_phone(), 2, strlen($order -> getnr_phone())),
+		),
+	));
+});
+
+$app->get("/order/:id_order/paypal", function($id_order) {
+	User::verifyLogin(False);
+
+	$order = new Order();
+
+	$order -> get((int)$id_order);
+
+	$cart = $order -> Get_Cart();
+
+	$page = new Page(array(
+		"header" => False,
+		"footer" => False,
+	));
+
+	$page -> setTpl("payment-paypal", array(
+		"order" => $order -> getValues(),
+		"cart" => $cart -> getValues(),
+		"products" => $cart -> Get_Products(),
+	));
 });
 
 $app->get("/login", function() {

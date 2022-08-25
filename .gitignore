@@ -3,5 +3,6 @@
 /vendor/hcodebr/php-classes/src/Mailer/
 /views-cache/
 /views/payment-pagseguro.html
+/views/payment-paypal.html
 /res/
 /Database/
